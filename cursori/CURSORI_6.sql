@@ -1,0 +1,60 @@
+--Esempio Cursori Annidati
+DECLARE
+  V_NUMSPESE NUMBER := &NUMSPESE;
+
+  --Primo Cursore: I migliori n clienti
+  CURSOR C_BESTCLI(P_NUMSPESE IN NUMBER)
+  IS
+    SELECT
+      AA.*
+    FROM
+      (
+        SELECT
+          CODFID,
+          SUM(TOTALE) AS TOTVEND
+        FROM
+          SCONTRINI
+        WHERE
+          CODFID <> '-1'
+        GROUP BY
+          CODFID
+        ORDER BY
+          SUM(TOTALE) DESC
+      )
+    AA
+  WHERE
+    ROWNUM <= P_NUMSPESE;
+
+  --Secondo Cursore: I dati di ciascun cliente
+  CURSOR C_DATICLI(P_CODFID IN CLIENTI.CODFIDELITY%TYPE)
+  IS
+    SELECT
+      A.CODFIDELITY,
+      A.NOME
+      || ' '
+      || A.COGNOME AS NOMINATIVO,
+      B.BOLLINI,
+      B.ULTIMASPESA
+    FROM
+      CLIENTI A
+    JOIN CARDS B
+    ON
+      A.CODFIDELITY = B.CODFIDELITY
+    WHERE
+      A.CODFIDELITY = P_CODFID FOR UPDATE;
+
+BEGIN
+
+  FOR R_BESTCLI IN C_BESTCLI(V_NUMSPESE)
+  LOOP
+    DBMS_OUTPUT.PUT_LINE(R_BESTCLI.CODFID || ' ' || R_BESTCLI.TOTVEND);
+
+    FOR R_DATICLI IN C_DATICLI(R_BESTCLI.CODFID)
+    LOOP
+      DBMS_OUTPUT.PUT_LINE(R_DATICLI.CODFIDELITY || '|' || R_DATICLI.NOMINATIVO || ' | ' || R_DATICLI.BOLLINI || ' | '
+      || R_DATICLI.ULTIMASPESA);
+    END LOOP;
+
+  END LOOP;
+  COMMIT;
+END;
