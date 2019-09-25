@@ -1,0 +1,89 @@
+--Esempio di NESTED TABLE
+DECLARE
+  CURSOR C_CLIENTI
+  IS
+    SELECT
+      AA.*
+    FROM
+      (
+        SELECT
+          A.NOME
+          || ' '
+          || A.COGNOME AS NOMINATIVO
+        FROM
+          CLIENTI A
+        JOIN
+          (
+            SELECT
+              CODFID,
+              COUNT( * )  AS NUMSPESE,
+              SUM(TOTALE) AS VALTOT
+            FROM
+              SCONTRINI
+            GROUP BY
+              CODFID
+          )
+        B
+      ON
+        A.CODFIDELITY = B.CODFID
+      WHERE
+        B.NUMSPESE  > 0
+      AND B.CODFID <> - 1
+      ORDER BY
+        B.VALTOT DESC
+      )
+      AA
+    WHERE
+      ROWNUM <= 10;
+
+    --CREAZIONE NUOVA NESTED TABLE
+  TYPE NOMINATIVO_TYPE
+IS
+  TABLE OF VARCHAR2(100);
+  NOMINATIVO_TAB NOMINATIVO_TYPE := NOMINATIVO_TYPE();
+
+  V_INDEX PLS_INTEGER            := 0;
+
+BEGIN
+  FOR R_CLIENTI IN C_CLIENTI
+  LOOP
+    V_INDEX := V_INDEX + 1;
+
+    NOMINATIVO_TAB.EXTEND;
+    NOMINATIVO_TAB(V_INDEX) := R_CLIENTI.NOMINATIVO;
+
+    DBMS_OUTPUT.PUT_LINE ('RECORD(' || V_INDEX || '): ' || ' ' || NOMINATIVO_TAB(V_INDEX));
+
+  END LOOP;
+
+  NOMINATIVO_TAB.EXTEND;
+  NOMINATIVO_TAB(11) := 'NICOLA LA ROCCA';
+
+  IF NOMINATIVO_TAB.EXISTS(11) THEN
+    DBMS_OUTPUT.PUT_LINE ('RECORD(' || 11 || '): ' || NOMINATIVO_TAB(11));
+  END IF;
+
+
+  NOMINATIVO_TAB.EXTEND;
+  IF NOMINATIVO_TAB.EXISTS(12) THEN
+    DBMS_OUTPUT.PUT_LINE ('RECORD(' || 12 || '):' || NOMINATIVO_TAB(12));
+  END IF;
+
+  DBMS_OUTPUT.PUT_LINE ('Numero Totale Record: ' || NOMINATIVO_TAB.COUNT);
+
+  NOMINATIVO_TAB.DELETE(12);
+
+  DBMS_OUTPUT.PUT_LINE ('Numero Totale Record: ' || NOMINATIVO_TAB.COUNT);
+
+  DBMS_OUTPUT.PUT_LINE ('Primo Record: ' || NOMINATIVO_TAB.FIRST);
+  DBMS_OUTPUT.PUT_LINE ('Ultimo Record: ' || NOMINATIVO_TAB.LAST);
+
+  NOMINATIVO_TAB.TRIM(3);
+
+  FOR i IN 1..NOMINATIVO_TAB.LAST
+  LOOP
+    DBMS_OUTPUT.PUT_LINE ('RECORD(' || i || '): ' || ' ' || NOMINATIVO_TAB(i));
+  END LOOP;
+
+
+END;

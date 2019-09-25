@@ -1,0 +1,42 @@
+-- Esempio di Cursor Based Record
+DECLARE
+  CURSOR ARTICOLI_CUR
+  IS
+    SELECT
+      AA.*
+    FROM
+      (
+        SELECT
+          CODART,
+          DESCRIZIONE,
+          PZCART,
+          DATACREAZIONE
+        FROM
+          ARTICOLI
+        WHERE
+          IDFAMASS = '10'
+      )
+    AA
+  WHERE
+    ROWNUM <= 30;
+
+  ARTICOLI_REC ARTICOLI_CUR%ROWTYPE;
+BEGIN
+  --Apertura Cursore
+  OPEN ARTICOLI_CUR;
+
+  LOOP
+    FETCH
+      ARTICOLI_CUR
+    INTO
+      ARTICOLI_REC;
+    EXIT
+  WHEN ARTICOLI_CUR%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE ('Articolo: '||ARTICOLI_REC.CODART||'-'||ARTICOLI_REC.DESCRIZIONE);
+    DBMS_OUTPUT.PUT_LINE ('Pezzi x Cartone: '||ARTICOLI_REC.PZCART);
+    DBMS_OUTPUT.PUT_LINE ('Data Creazione: '||TO_CHAR(ARTICOLI_REC.DATACREAZIONE,'DD/MM/YYYY'));
+  END LOOP;
+
+  CLOSE ARTICOLI_CUR;
+
+END;
