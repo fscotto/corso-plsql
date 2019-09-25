@@ -1,0 +1,23 @@
+-- Procedure SelArticolo V.1
+
+CREATE OR REPLACE PROCEDURE Sp_SelArticolo
+(
+I_CodArt IN VARCHAR2,
+O_DesArt OUT VARCHAR2,
+O_Prezzo OUT VARCHAR2
+)
+AS
+BEGIN
+
+    SELECT A.CODART ||' '|| A.DESCRIZIONE AS Articolo, BB.PREZZO
+    INTO O_DesArt, O_Prezzo
+    FROM ARTICOLI A LEFT JOIN
+    (SELECT CODART, PREZZO FROM DETTLISTINI WHERE IDLIST = 1) BB
+    ON A.CODART = BB.CODART
+    WHERE A.CODART = I_CodArt;
+    
+EXCEPTION
+WHEN OTHERS THEN
+DBMS_OUTPUT.PUT_LINE('Errore nella ricerca del codice: ' || I_CodArt);
+ 
+END Sp_SelArticolo;
