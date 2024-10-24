@@ -1,2 +1,3 @@
-# corso-plsql
-Esempi di PL/SQL presi dal corso di Nicola La Rocca su Udemy
+# Corso PL/SQL
+
+Qua conservo gli esercizi e gli esempi scritti durante il [corso](https://www.udemy.com/course/il-linguaggio-plsql-di-oracle-da-zero-a-esperto) di PL/SQL su Udemy.
